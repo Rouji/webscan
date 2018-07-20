@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<title>Webscan</title>
+<style type="text/css">
+#thumbs img{width:33%;}
+.input-group{width:auto;}
+</style>
+</head>
+<body>
+    <main class="container">
+    <div class="row">
+        <div id="alerts" class="col-sm-12">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <h4 class="mb-3 mt-3">Scans</h4>
+            <div id="thumbs" class="mb-3"></div>
+        </div>
+    </div>
+    <div class="row" id="placeholder">
+        <div class="col-12">
+            <div class="text-center text-muted mb-4 mt-4">Nothing here yet.</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="input-group float-left">
+                <div class="input-group-prepend">
+                    <input type="button" class="btn btn-outline-secondary" value="Email" data-toggle="modal" data-target="#modal_email"/>
+                </div>
+                <div class="input-group-append">
+                    <input type="button" class="btn btn-outline-secondary" value="Download" onclick="zip();"/>
+                </div>
+            </div>
+            <div class="input-group float-right">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">
+                        <input id="crop" type="checkbox" checked/>
+                        &nbsp;crop
+                    </span>
+                </div>
+                <div class="input-group-append">
+                    <input type="button" id="scan" class="btn btn-primary" value="Scan" onclick="scan();"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    </main>
+
+    <div class="modal fade" id="modal_email" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Send Email</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" id="email" placeholder="bob@example.com" class="form-control"/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="email();">Send</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal_image" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <input type="hidden" id="image_id" value=""/>
+                <div class="modal-body">
+                    <img src="" id="image" class="img-fluid"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" onclick="del();">Delete</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+function add_img(id)
+{
+    $("#placeholder").hide();
+    var img = $("<img>");
+    img.attr("src", "/img/"+id+"?thumb");
+    img.addClass("img-fluid");
+    img.click(function(){view(id);});
+    img.appendTo("#thumbs");
+}
+
+function load_thumbs()
+{
+    $("#thumbs").empty();
+    $("#placeholder").show();
+    $.ajax({
+        url: "/img",
+        dataType: "json",
+        success: function(data){
+            data.forEach(function(id){add_img(id);});
+        },
+        error: ajax_error
+    });
+}
+
+function scan()
+{
+    var checked = $("#crop").is(":checked");
+    $.ajax({
+        url: "/scan"+(checked ? "?crop" : ""),
+        dataType: "json",
+        beforeSend: function(){
+            $("#scan").val("Scanning...").prop("disabled", true);
+        },
+        complete: function(){
+            load_thumbs();
+            $("#scan").val("Scan").prop("disabled", false);
+        },
+        error: ajax_error
+    });
+}
+
+function view(id)
+{
+    $("#image_id").val(id);
+    $("#image").attr("src", "/img/"+id);
+    $("#modal_image").modal("show");
+}
+
+function del()
+{
+    var id = $("#image_id").val();
+    $.ajax({
+        url: "/img/"+id,
+        type: "DELETE",
+        complete: function() {
+            $("#modal_image").modal("hide");
+            load_thumbs();
+        },
+        error: ajax_error
+    });
+}
+
+function show_alert(msg, alerttype)
+{
+    $('#alerts').append('<div id="alertdiv" class="alert alert-'+alerttype+'"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>')
+}
+
+function ajax_error(resp)
+{
+    show_alert("Error: "+resp.responseJSON.error, "danger");
+}
+
+function email()
+{
+    var addr = $("#email").val();
+    $.ajax({
+        url: "/email",
+        type: "POST",
+        dataType: "json",
+        data: {email: addr},
+        success: function(){show_alert("Email sent!", "success");},
+        error: ajax_error,
+        complete: function(){$("#modal_email").modal('hide');}
+    });
+}
+
+function zip()
+{
+    window.location.href="/zip";
+}
+
+window.addEventListener('DOMContentLoaded', load_thumbs, true);
+</script>
+</html>

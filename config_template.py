@@ -1,0 +1,9 @@
+THUMB_SIZE = 1000
+THUMB_QUALITY = 60
+SCAN_QUALITY = 80
+SMTP_SERVER='mail.example.com'
+SMTP_USER='scan@example.com'
+SMTP_PASSWORD='hunter2'
+MAIL_FROM='scan@example.com'
+MAIL_SUBJECT='Scan'
+MAIL_BODY='Fresh scans!'
