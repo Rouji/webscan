@@ -23,7 +23,7 @@ import config
 
 
 def rnd(length: int):
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 
 app = Flask(__name__)
@@ -118,7 +118,7 @@ def images(id):
     if not id:
         return jsonify(list(scanned_images.keys()))
     if id not in scanned_images:
-        return jsonify({'success': False, 'error': f'Image with id {id} not found'}), 404
+        return jsonify({'success': False, 'error': 'Image with id {} not found'.format(id)}), 404
     if request.method == 'DELETE':
         scanned_images.pop(id, None)
         return jsonify({'success': True})
