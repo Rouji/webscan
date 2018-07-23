@@ -93,6 +93,9 @@ def scan():
     try:
         dev = sane.open(devices[0][0])
         #param = dev.get_parameters()
+        dev.mode = config.SCANNER_MODE
+        dev.resolution = SCANNER_DPI
+        dev.depth = SCANNER_BPP
         dev.start()
         im = dev.snap()
         dev.close()
@@ -105,7 +108,7 @@ def scan():
     thumb.thumbnail((config.THUMB_SIZE, config.THUMB_SIZE), Image.ANTIALIAS)
     id = rnd(20)
     scanned_images[id] = (
-        pil_to_jpeg(im, config.SCAN_QUALITY),
+        pil_to_jpeg(im, config.JPEG_QUALITY),
         pil_to_jpeg(thumb, config.THUMB_QUALITY)
     )
     sane.exit()
