@@ -182,5 +182,5 @@ def index():
     return render_template('index.html')
 
 @entrypoint
-def main(dbg=False, host='0.0.0.0'):
-    app.run(debug=dbg, host=host)
+def main(dbg=False, host='0.0.0.0', port=5000):
+    app.run(debug=dbg, host=host, port=port)
