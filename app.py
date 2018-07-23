@@ -94,8 +94,8 @@ def scan():
         dev = sane.open(devices[0][0])
         #param = dev.get_parameters()
         dev.mode = config.SCANNER_MODE
-        dev.resolution = SCANNER_DPI
-        dev.depth = SCANNER_BPP
+        dev.resolution = config.SCANNER_DPI
+        dev.depth = config.SCANNER_BPP
         dev.start()
         im = dev.snap()
         dev.close()
